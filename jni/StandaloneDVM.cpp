@@ -38,8 +38,12 @@ int main(int argc, char **argv) {
 	args.ignoreUnrecognized = JNI_FALSE;
 
 	if ((handle = dlopen("/system/lib/libdvm.so", RTLD_LAZY)) == NULL) {
-		printf("Can't open share library");
-		exit(EXIT_FAILURE);
+		printf("Can't open dalvik share library\n");
+		printf("Try to open ART library\n");
+		if ((handle = dlopen("/system/lib/libart.so", RTLD_LAZY)) == NULL) {
+			printf("Can't open ART library, Quit!!!!!!\n");
+			exit(EXIT_FAILURE);
+		}
 	}
 
 	dlerror();
