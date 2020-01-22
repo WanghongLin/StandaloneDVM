@@ -2,4 +2,5 @@
 *.dex
 /obj
 /libs
+/jni/cmake-build-debug
 
