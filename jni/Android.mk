@@ -16,22 +16,33 @@ LOCAL_PATH	:= $(call my-dir)
 
 # use sdk tool dex to create dex file
 # change variable ANDROID_SDK_ROOT to the directory of your Android SDK
-ANDROID_SDK_ROOT_	:= $(ANDROID_SDK_ROOT)
-WORKING_PATH	:= $(LOCAL_PATH)/..
-OUTPUT_DEX		:= $(shell pwd)/Hello.dex
+ANDROID_SDK_ROOT_ := $(ANDROID_SDK_ROOT)
+WORKING_PATH      := $(LOCAL_PATH)/..
+OUTPUT_DEX        := $(shell pwd)/Hello.dex
+
+ifneq ($(strip $(ANDROID_SDK_ROOT)),)
+    ANDROID_SDK_ROOT_ := $(ANDROID_SDK_ROOT)
+endif
+ifneq ($(strip $(ANDROID_SDK_HOME)),)
+    ANDROID_SDK_ROOT_ := $(ANROID_SDK_HOME)
+endif
+ifneq ($(strip $(ANDROID_HOME)),)
+    ANDROID_SDK_ROOT_ := $(ANDROID_HOME)
+endif
 
 ifeq ($(strip $(ANDROID_SDK_ROOT_)),)
-$(error ANDROID_SDK_ROOT not set)
+    $(error Could not locate SDK path from ANDROID_SDK_ROOT, ANDROID_SDK_HOME, ANDROID_HOME)
 endif
 
 ADB_EXE := $(ANDROID_SDK_ROOT_)/platform-tools/adb
+LAST_DX_DIR := $(lastword $(wildcard $(ANDROID_SDK_ROOT_)/build-tools/*))
 
 default: run
 
 all:
 	@printf "Dex\t\t\t\t: $(notdir $(OUTPUT_DEX))\n"
 	@javac $(WORKING_PATH)/src/com/mutter/standalonedvm/Hello.java
-	@cd $(WORKING_PATH)/src && $(ANDROID_SDK_ROOT_)/build-tools/22.0.1/dx \
+	@cd $(WORKING_PATH)/src && $(LAST_DX_DIR)/dx \
 			--dex --output=$(OUTPUT_DEX) \
 			com/mutter/standalonedvm/Hello.class
 	@printf "\e[32mWrite to dex file $(OUTPUT_DEX)\e[30m\n"
@@ -40,7 +51,7 @@ all:
 run: all
 	@[ `$(ADB_EXE) get-state` ] || { printf '\e[31mNo device attached, please attach your Android device and run again.\e[30m\n'; exit 1; }
 	@[ `$(ADB_EXE) shell "[ -f /system/lib/libdvm.so ] && echo 0 || echo 1" |tr -d '\r'` == 0 ] && exit 0 || { printf "\e[31mThe device has newer ART, not Dalvik virtual machine\e[30m\n"; exit 1; }
-	@$(ADB_EXE) push $(shell pwd)/libs/armeabi-v7a/StandaloneDVM /data/local/tmp/
+	@$(ADB_EXE) push $(shell pwd)/libs/$$($(ADB_EXE) shell getprop ro.product.cpu.abi)/StandaloneDVM /data/local/tmp/
 	@$(ADB_EXE) push $(OUTPUT_DEX) /data/local/tmp/
 	@$(ADB_EXE) shell /data/local/tmp/StandaloneDVM
 

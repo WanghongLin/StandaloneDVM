@@ -40,7 +40,7 @@ int main(int argc, char **argv) {
 	if ((handle = dlopen("/system/lib/libdvm.so", RTLD_LAZY)) == NULL) {
 		printf("Can't open dalvik share library\n");
 		printf("Try to open ART library\n");
-		if ((handle = dlopen("/system/lib/libart.so", RTLD_LAZY)) == NULL) {
+		if ((handle = dlopen("/system/lib64/libart.so", RTLD_LAZY)) == NULL) {
 			printf("Can't open ART library, Quit!!!!!!\n");
 			exit(EXIT_FAILURE);
 		}
