@@ -13,5 +13,11 @@ $ ndk-build
 $ ndk-build run
 ```
 
-#### TODO
-add ART support
+#### For ART support
+No extra steps need to take, just invoke them from `adb shell`, e.g if you want to run `com.example.Main` and load some extra native libraries, do like following
+
+```shell
+$ adb shell
+$ cd /apex/com.android.art/bin
+$ ./dalvikvm64 -verbose:third-party-jni -Xjnitrace:String -cp /data/local/tmp/app-debug.apk -Djava.library.path=/data/local/tmp com.example.Main
+```
